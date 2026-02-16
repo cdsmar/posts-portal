@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Dashboard</title>
+    <style>
+        .sidebar {
+            float: left;
+            width: 250px;
+            padding: 20px;
+            background-color: #f4f4f4;
+            border-right: 1px solid #ddd;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 15px;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10px;
+            margin: 5px 0;
+            text-decoration: none;
+            color: #333;
+            background-color: #e2e2e2;
+            border-radius: 4px;
+        }
+
+        .sidebar a:hover {
+            background-color: #ddd;
+        }
+
+        .content {
+            margin-left: 270px;
+            padding: 20px;
+        }
+
+        .content h3 {
+            margin-top: 0;
+        }
+
+        .post {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<h2>Dashboard</h2>
+
+<div class="sidebar">
+    <h3>Menu</h3>
+    <a th:href="@{/find-hobby}">Find a Hobby</a>
+    <a th:href="@{/find-studying}">Study</a>
+    <a th:href="@{/find-group}">Join a Team</a>
+    <a th:href="@{/add-post}">Add Post</a>
+    <a th:href="@{/my-posts}">My Posts</a>
+    <a th:href="@{/users}">Users</a>
+
+</div>
+
+<div class="content">
+    <h3>Welcome, <span th:text="${user.firstName}"></span>!</h3>
+    <div class="search-bar">
+        <form th:action="@{/dashboard}" method="get">
+            <input type="text" name="query" placeholder="Search posts..." th:value="${searchQuery}" />
+            <button type="submit">Search</button>
+        </form>
+    </div>
+    <div th:each="post : ${posts}">
+        <a th:href="@{/post-details/{postId}(postId=${post.id})}" class="post">
+            <h4 th:text="${post.title}"></h4>
+            <p th:text="${post.description}"></p>
+            <p>Category: <span th:text="${post.category}"></span></p>
+
+            <p>Posted by: <span th:text="${post.user.firstName}"></span> <span th:text="${post.user.lastName}"></span></p>
+
+            <p>Posted on: <span th:text="${#temporals.format(post.timestamp, 'yyyy-MM-dd')}"></span> at
+                <span th:text="${#temporals.format(post.timestamp, 'HH:mm:ss')}"></span></p>
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

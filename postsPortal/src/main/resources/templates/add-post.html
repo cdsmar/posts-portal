@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Post</title>
+</head>
+<body>
+<h2>Add a New Post</h2>
+<form th:action="@{/add-post}" method="post">
+    <label for="title">Title:</label>
+    <input type="text" id="title" name="title" required/><br/><br/>
+
+    <label for="description">Description:</label>
+    <textarea id="description" name="description" required></textarea><br/><br/>
+
+    <label>Category:</label><br/>
+    <input type="radio" id="hobby" name="category" value="Hobby" required/>
+    <label for="hobby">Hobby</label><br/>
+
+    <input type="radio" id="studying" name="category" value="Studying" required/>
+    <label for="studying">Studying</label><br/>
+
+    <input type="radio" id="group" name="category" value="Group" required/>
+    <label for="group">Group</label><br/><br/>
+
+    <button type="submit">Add Post</button>
+</form>
+</body>
+</html>

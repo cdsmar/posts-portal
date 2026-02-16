@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Profile Setup</title>
+</head>
+<body>
+<h2>Profile Setup</h2>
+<form th:action="@{/profile-setup}" method="post">
+    <input type="hidden" name="userId" th:value="${user.id}" />
+
+    <h3>Select Hobbies</h3>
+    <div th:each="hobby : ${allHobbies}">
+        <label>
+            <input type="checkbox" name="hobbies" th:value="${hobby.id}"
+                   th:checked="${user.hobbies.contains(hobby)}"/>
+            <span th:text="${hobby.name}">Hobby Name</span>
+        </label><br/>
+    </div>
+
+    <h3>Select Courses</h3>
+    <div th:each="course : ${allCourses}">
+        <label>
+            <input type="checkbox" name="courses" th:value="${course.id}"
+                   th:checked="${user.courses.contains(course)}"/>
+            <span th:text="${course.name}">Course Name</span>
+        </label><br/>
+    </div>
+
+    <h3>Select Teams</h3>
+    <div th:each="team : ${allTeams}">
+        <label>
+            <input type="checkbox" name="teams" th:value="${team.id}"
+                   th:checked="${user.teams.contains(team)}"/>
+            <span th:text="${team.name}">Team Name</span>
+        </label><br/>
+    </div>
+
+    <button type="submit">Save Profile</button>
+</form>
+</body>
+</html>

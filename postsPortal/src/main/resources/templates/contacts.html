@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Your Contacts</title>
+</head>
+<body>
+<h2>Your Contacts</h2>
+<div th:each="contact : ${contacts}">
+    <p th:text="${contact.contactUser.firstName} + ' ' + ${contact.contactUser.lastName}"></p>
+    <form th:action="@{/remove-contact/{userId}(userId=${contact.contactUser.id})}" method="post">
+        <button type="submit">Remove Contact</button>
+    </form>
+    <a th:href="@{/messages/{contactId}(contactId=${contact.contactUser.id})}">Send Message</a>
+</div>
+</body>
+</html>
