@@ -8,6 +8,7 @@ import com.portal.postsPortal.repository.ContactRepository;
 import com.portal.postsPortal.repository.ConversationRepository;
 import com.portal.postsPortal.repository.MessageRepository;
 import com.portal.postsPortal.repository.UserRepository;
+import com.portal.postsPortal.service.NotificationService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -20,37 +21,40 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.portal.postsPortal.model.NotificationMessage;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 @Controller
 public class ConversationController {
 
     private final UserRepository userRepository;
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final NotificationService notificationService;
+
 
     public ConversationController(UserRepository userRepository,
                                   ConversationRepository conversationRepository,
-                                  MessageRepository messageRepository) {
+                                  MessageRepository messageRepository,
+                                  SimpMessagingTemplate messagingTemplate, NotificationService notificationService) {
         this.userRepository = userRepository;
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
+        this.messagingTemplate = messagingTemplate;
+        this.notificationService = notificationService;
     }
 
     @GetMapping("/conversation/{userId}")
     public String showConversation(@PathVariable Long userId, Model model, Authentication authentication) {
-        // Get the logged-in user
         String username = authentication.getName();
-        User loggedInUser = userRepository.findByEmail(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        User contactUser = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Contact user not found"));
+        User loggedInUser = userRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("User not found"));
+        User contactUser = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Contact user not found"));
 
         Conversation conversation = conversationRepository
                 .findConversationBetweenUsers(loggedInUser, contactUser)
                 .orElseGet(() -> {
-
                     Conversation newConversation = new Conversation();
-
                     if (loggedInUser.getId() < contactUser.getId()) {
                         newConversation.setUser1(loggedInUser);
                         newConversation.setUser2(contactUser);
@@ -58,7 +62,6 @@ public class ConversationController {
                         newConversation.setUser1(contactUser);
                         newConversation.setUser2(loggedInUser);
                     }
-
                     return conversationRepository.save(newConversation);
                 });
 
@@ -66,38 +69,27 @@ public class ConversationController {
 
         model.addAttribute("conversation", conversation);
         model.addAttribute("messages", messages);
-        User otherUser;
 
-        if (conversation.getUser1().getId().equals(loggedInUser.getId())) {
-            otherUser = conversation.getUser2();
-        } else {
-            otherUser = conversation.getUser1();
-        }
-
+        User otherUser = conversation.getUser1().getId().equals(loggedInUser.getId()) ? conversation.getUser2() : conversation.getUser1();
         model.addAttribute("otherUser", otherUser);
+
         return "conversation";
     }
-
 
     @PostMapping("/conversation/{userId}/send-message")
     public String sendMessage(@PathVariable Long userId,
                               @RequestParam String content,
                               Authentication authentication) {
 
-        String username = authentication.getName();
-
-        User loggedInUser = userRepository.findByEmail(username)
+        User loggedInUser = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         User contactUser = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Contact user not found"));
 
         Conversation conversation = conversationRepository
                 .findConversationBetweenUsers(loggedInUser, contactUser)
                 .orElseGet(() -> {
-
                     Conversation newConversation = new Conversation();
-
                     if (loggedInUser.getId() < contactUser.getId()) {
                         newConversation.setUser1(loggedInUser);
                         newConversation.setUser2(contactUser);
@@ -105,7 +97,6 @@ public class ConversationController {
                         newConversation.setUser1(contactUser);
                         newConversation.setUser2(loggedInUser);
                     }
-
                     return conversationRepository.save(newConversation);
                 });
 
@@ -116,6 +107,8 @@ public class ConversationController {
         message.setConversation(conversation);
 
         messageRepository.save(message);
+
+        notificationService.sendMessageNotification(message);
 
         return "redirect:/conversation/" + userId;
     }
