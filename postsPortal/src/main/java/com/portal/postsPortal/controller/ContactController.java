@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,26 +38,30 @@ public class ContactController {
 
         List<User> users;
 
+        // Check if the query is not empty or null before searching
         if (query == null || query.isEmpty()) {
-            users = userRepository.findAll();
+            users = userRepository.findAll();  // No filtering, fetch all users
         } else {
-            // Search by first name, last name, or email (ignore case)
+            // Perform search if the query is not empty
             users = userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
                     query, query, query
             );
         }
 
-        // Remove the logged-in user from the list
+        // Remove the logged-in user from the list if they exist
         users.remove(loggedInUser);
 
+        // Add the users and the query to the model
         model.addAttribute("users", users);
-        model.addAttribute("query", query); // keep the search term in input
+        model.addAttribute("query", query); // Keep the search term in input
+
         return "users-list";
     }
 
 
+
     @PostMapping("/add-contact/{userId}")
-    public String addContact(@PathVariable Long userId, Authentication authentication) {
+    public String addContact(@PathVariable Long userId, Authentication authentication, RedirectAttributes redirectAttributes) {
         String username = authentication.getName();
         User loggedInUser = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -67,6 +72,8 @@ public class ContactController {
         if (!contactRepository.existsByUserAndContactUser(loggedInUser, contactUser)) {
             Contact contact = new Contact(loggedInUser, contactUser, LocalDateTime.now());
             contactRepository.save(contact);
+            // Add success message to redirect
+            redirectAttributes.addFlashAttribute("contactAdded", true);
         }
 
         return "redirect:/users";

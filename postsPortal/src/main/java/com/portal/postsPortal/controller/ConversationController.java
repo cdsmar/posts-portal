@@ -8,7 +8,6 @@ import com.portal.postsPortal.repository.ContactRepository;
 import com.portal.postsPortal.repository.ConversationRepository;
 import com.portal.postsPortal.repository.MessageRepository;
 import com.portal.postsPortal.repository.UserRepository;
-import com.portal.postsPortal.service.NotificationService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -31,18 +30,15 @@ public class ConversationController {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final SimpMessagingTemplate messagingTemplate;
-    private final NotificationService notificationService;
-
 
     public ConversationController(UserRepository userRepository,
                                   ConversationRepository conversationRepository,
                                   MessageRepository messageRepository,
-                                  SimpMessagingTemplate messagingTemplate, NotificationService notificationService) {
+                                  SimpMessagingTemplate messagingTemplate) {
         this.userRepository = userRepository;
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.messagingTemplate = messagingTemplate;
-        this.notificationService = notificationService;
     }
 
     @GetMapping("/conversation/{userId}")
@@ -84,7 +80,7 @@ public class ConversationController {
         User loggedInUser = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         User contactUser = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Contact user not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Conversation conversation = conversationRepository
                 .findConversationBetweenUsers(loggedInUser, contactUser)
@@ -105,10 +101,16 @@ public class ConversationController {
         message.setTimestamp(LocalDateTime.now());
         message.setUser(loggedInUser);
         message.setConversation(conversation);
-
         messageRepository.save(message);
 
-        notificationService.sendMessageNotification(message);
+        // Send notification to recipient
+        NotificationMessage notification = new NotificationMessage(
+                loggedInUser.getFirstName() + " " + loggedInUser.getLastName(),
+                content,
+                conversation.getId()
+        );
+
+        messagingTemplate.convertAndSend("/topic/notifications/" + contactUser.getId(), notification);
 
         return "redirect:/conversation/" + userId;
     }

@@ -3,12 +3,119 @@
 <head>
     <title>My Contacts</title>
     <style>
-        .user-item {
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 250px;
+            padding: 20px;
+            background-color: #f4f4f4;
+            border-right: 1px solid #ddd;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 15px;
+        }
+
+        .sidebar a {
+            display: block;
             padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
+            margin: 5px 0;
+            text-decoration: none;
+            color: #333;
+            background-color: #e2e2e2;
             border-radius: 4px;
-            background-color: #f9f9f9;
+        }
+
+        .sidebar a:hover {
+            background-color: #ddd;
+        }
+
+        /* Content Area Styles */
+        .content {
+            margin-left: 270px; /* Sidebar width + margin */
+            padding: 20px;
+            width: calc(100% - 270px); /* Takes up the remaining width after sidebar */
+            height: 100vh; /* Full height */
+            overflow-y: auto; /* Allows scrolling if the content overflows */
+        }
+
+        /* Header */
+        h2 {
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        /* Search Form */
+        form {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        form input {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            width: 300px;
+        }
+
+        form button {
+            padding: 8px 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        form button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Users list layout */
+        .user-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Dynamically adjusts columns based on available space */
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        /* User Item */
+        .user-item {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .user-item:hover {
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-item p {
+            margin: 5px 0;
+            color: #555;
         }
 
         .user-item button {
@@ -17,44 +124,113 @@
             color: white;
             border: none;
             border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%; /* Make buttons take up the available width inside the form */
         }
 
         .user-item button:hover {
             background-color: #0056b3;
         }
-    </style>
-    <script th:inline="javascript">
-        /*<![CDATA[*/
-        var LOGGED_IN_USER_ID = /*[[${loggedInUser != null ? loggedInUser.id : 0}]]*/ 0;
-        /*]]>*/
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-    <script src="/js/footer.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEJ4+R7Wvf6T5dO1pL0deD5TjxtQw6DQf9B+cxuXtWol6BvD7EMWgMk2AfmM1" crossorigin="anonymous">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/styles.css">
-    <style>
-        body{
-            font-family: 'Inter', sans-serif;
+
+        .user-item button:focus {
+            outline: none;
         }
+
+        /* Action buttons inside user item */
+        .user-item .action-buttons {
+            display: flex;
+            gap: 10px; /* Reduced gap between buttons */
+            margin-top: 10px;
+        }
+
+        .user-item .action-buttons form {
+            flex: 1;
+            margin: 0; /* Align forms better */
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .user-list {
+                grid-template-columns: 1fr; /* Single column for smaller screens */
+            }
+
+            .user-item {
+                padding: 15px; /* Add more padding for better visibility */
+            }
+
+            form input {
+                width: 100%; /* Make the search input full width on small screens */
+            }
+
+            .user-item .action-buttons {
+                flex-direction: column; /* Stack the buttons vertically */
+                gap: 10px;
+            }
+
+            .user-item .action-buttons form {
+                width: 100%; /* Ensure the forms take up full width */
+            }
+
+            .content {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+
+        /* Medium screens */
+        @media (max-width: 1024px) {
+            .user-list {
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* 2 columns for medium screens */
+            }
+        }
+
     </style>
 </head>
 <body>
-<h2>My Contacts</h2>
 
-<div th:each="contact : ${contacts}" class="user-item">
-    <p><strong>Name:</strong> <span th:text="${contact.contactUser.firstName} + ' ' + ${contact.contactUser.lastName}"></span></p>
-    <p><strong>Email:</strong> <span th:text="${contact.contactUser.email}"></span></p>
+<!-- Sidebar -->
+<div class="sidebar">
+    <h3>Menu</h3>
+    <a th:href="@{/find-hobby}">Find a Hobby</a>
+    <a th:href="@{/find-studying}">Study</a>
+    <a th:href="@{/find-group}">Join a Team</a>
+    <a th:href="@{/add-post}">Add Post</a>
+    <a th:href="@{/my-posts}">My Posts</a>
+    <a th:href="@{/users}">Users</a>
+    <a th:href="@{/contacts}">View Contacts</a>
+</div>
 
-    <form th:action="@{/conversation/{userId}(userId=${contact.contactUser.id})}" method="get">
-        <button type="submit">Send Message</button>
+<!-- Content Area -->
+<div class="content">
+    <h2>My Contacts</h2>
+
+    <!-- Search Form for contacts -->
+    <form th:action="@{/contacts}" method="get">
+        <input type="text" name="query" placeholder="Search contacts by name or email..." th:value="${query}" />
+        <button type="submit">Search</button>
     </form>
 
-    <form th:action="@{/remove-contact/{userId}(userId=${contact.contactUser.id})}" method="post">
-        <button type="submit">Remove Contact</button>
-    </form>
+    <div class="user-list">
+        <!-- Iterate over contacts -->
+        <div th:each="contact : ${contacts}" class="user-item">
+            <p><strong>Name:</strong> <span th:text="${contact.contactUser.firstName} + ' ' + ${contact.contactUser.lastName}"></span></p>
+            <p><strong>Email:</strong> <span th:text="${contact.contactUser.email}"></span></p>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <!-- Send Message Button -->
+                <form th:action="@{/conversation/{userId}(userId=${contact.contactUser.id})}" method="get">
+                    <button type="submit">Send Message</button>
+                </form>
+
+                <!-- Remove Contact Button -->
+                <form th:action="@{/remove-contact/{userId}(userId=${contact.contactUser.id})}" method="post">
+                    <button type="submit">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 </body>

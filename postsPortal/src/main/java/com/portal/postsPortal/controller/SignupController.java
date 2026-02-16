@@ -38,7 +38,12 @@ public class SignupController {
                                @RequestParam String password,
                                Model model) {
         if (userRepo.findByEmail(email).isPresent()) {
-            model.addAttribute("error", "Email already exists!");
+            model.addAttribute("error", "Email already exists.");
+            return "signup";
+        }
+
+        if (password.length() < 6) {
+            model.addAttribute("error", "Password must be at least 6 characters long.");
             return "signup";
         }
 
