@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Contacts</title>
+    <style>
+        .user-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+
+        .user-item button {
+            padding: 8px 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .user-item button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<h2>My Contacts</h2>
+
+<div th:each="contact : ${contacts}" class="user-item">
+    <p><strong>Name:</strong> <span th:text="${contact.contactUser.firstName} + ' ' + ${contact.contactUser.lastName}"></span></p>
+    <p><strong>Email:</strong> <span th:text="${contact.contactUser.email}"></span></p>
+
+    <form th:action="@{/conversation/{userId}(userId=${contact.contactUser.id})}" method="get">
+        <button type="submit">Send Message</button>
+    </form>
+
+    <form th:action="@{/remove-contact/{userId}(userId=${contact.contactUser.id})}" method="post">
+        <button type="submit">Remove Contact</button>
+    </form>
+</div>
+
+</body>
+</html>

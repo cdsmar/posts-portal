@@ -35,6 +35,13 @@
 </head>
 <body>
 <h2>All Users</h2>
+<form th:action="@{/users}" method="get">
+    <input type="text" name="query" placeholder="Search users by name or email..."
+           th:value="${query}" />
+    <button type="submit">Search</button>
+</form>
+
+<br/>
 
 <div th:each="user : ${users}" class="user-item">
     <p><strong>Name:</strong> <span th:text="${user.firstName} + ' ' + ${user.lastName}"></span></p>

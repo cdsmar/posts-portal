@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,17 +27,33 @@ public class ContactController {
     }
 
     @GetMapping("/users")
-    public String showUsers(Model model, Authentication authentication) {
+    public String showUsers(@RequestParam(value = "query", required = false) String query,
+                            Model model,
+                            Authentication authentication) {
+
         String username = authentication.getName();
         User loggedInUser = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<User> allUsers = userRepository.findAll();
-        allUsers.remove(loggedInUser);
+        List<User> users;
 
-        model.addAttribute("users", allUsers);
+        if (query == null || query.isEmpty()) {
+            users = userRepository.findAll();
+        } else {
+            // Search by first name, last name, or email (ignore case)
+            users = userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                    query, query, query
+            );
+        }
+
+        // Remove the logged-in user from the list
+        users.remove(loggedInUser);
+
+        model.addAttribute("users", users);
+        model.addAttribute("query", query); // keep the search term in input
         return "users-list";
     }
+
 
     @PostMapping("/add-contact/{userId}")
     public String addContact(@PathVariable Long userId, Authentication authentication) {
