@@ -8,6 +8,7 @@ import com.portal.postsPortal.repository.PostRepository;
 import com.portal.postsPortal.repository.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,14 +43,24 @@ public class PostController {
                           @RequestParam String category,
                           Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
         if (authentication == null || !authentication.isAuthenticated()) {
             model.addAttribute("error", "User not authenticated");
             return "redirect:/login";
         }
 
-        String username = authentication.getName();
-        User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = null;
+        if (authentication.getPrincipal() instanceof OAuth2User) {
+            OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+            String email = oAuth2User.getAttribute("email");
+
+            user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+        } else {
+            String username = authentication.getName();
+            user = userRepository.findByEmail(username)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+        }
 
         Post post = new Post();
         post.setTitle(title);
@@ -62,6 +73,7 @@ public class PostController {
         return "redirect:/dashboard";
     }
 
+
     @GetMapping("/post-details/{postId}")
     public String showPostDetails(@PathVariable Long postId, Model model) {
         Post post = postRepository.findById(postId)
@@ -69,8 +81,11 @@ public class PostController {
 
         List<Message> messages = messageRepository.findByPostOrderByTimestampDesc(post);
 
+        String postUrl = "http://localhost:8080/post-details/" + postId;
+
         model.addAttribute("post", post);
         model.addAttribute("messages", messages);
+        model.addAttribute("postUrl", postUrl);
 
         return "post-details";
     }
@@ -80,9 +95,18 @@ public class PostController {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
-        String username = authentication.getName();
-        User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = null;
+        if (authentication.getPrincipal() instanceof OAuth2User) {
+            OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+            String email = oAuth2User.getAttribute("email");
+
+            user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+        } else {
+            String username = authentication.getName();
+            user = userRepository.findByEmail(username)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+        }
 
         Message message = new Message(content, user, post);
 
@@ -96,26 +120,20 @@ public class PostController {
                                        @RequestParam String content,
                                        Authentication authentication) {
 
-        // Get the logged-in user
         User loggedInUser = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Get the post to which the message is being sent
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
-        // Create a new message tied to the post (without a conversation)
         Message message = new Message();
         message.setContent(content);
         message.setTimestamp(LocalDateTime.now());
         message.setUser(loggedInUser);
-        message.setPost(post);  // Associate with the post, not a conversation
+        message.setPost(post);
 
-        // Save the message
         messageRepository.save(message);
 
-        // Redirect back to the post details page (where messages are displayed)
         return "redirect:/post-details/" + postId;
     }
-
 }

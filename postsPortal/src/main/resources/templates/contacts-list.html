@@ -14,7 +14,6 @@
             display: flex;
         }
 
-        /* Sidebar Styles */
         .sidebar {
             position: fixed;
             top: 0;
@@ -44,23 +43,20 @@
             background-color: #ddd;
         }
 
-        /* Content Area Styles */
         .content {
-            margin-left: 270px; /* Sidebar width + margin */
+            margin-left: 270px;
             padding: 20px;
-            width: calc(100% - 270px); /* Takes up the remaining width after sidebar */
-            height: 100vh; /* Full height */
-            overflow-y: auto; /* Allows scrolling if the content overflows */
+            width: calc(100% - 270px);
+            height: 100vh;
+            overflow-y: auto;
         }
 
-        /* Header */
         h2 {
             margin-bottom: 20px;
             font-size: 28px;
             font-weight: bold;
         }
 
-        /* Search Form */
         form {
             margin-bottom: 20px;
             display: flex;
@@ -88,15 +84,13 @@
             background-color: #0056b3;
         }
 
-        /* Users list layout */
         .user-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Dynamically adjusts columns based on available space */
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
             padding: 20px 0;
         }
 
-        /* User Item */
         .user-item {
             background-color: #fff;
             padding: 15px;
@@ -126,7 +120,7 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
-            width: 100%; /* Make buttons take up the available width inside the form */
+            width: 100%;
         }
 
         .user-item button:hover {
@@ -137,39 +131,37 @@
             outline: none;
         }
 
-        /* Action buttons inside user item */
         .user-item .action-buttons {
             display: flex;
-            gap: 10px; /* Reduced gap between buttons */
+            gap: 10px;
             margin-top: 10px;
         }
 
         .user-item .action-buttons form {
             flex: 1;
-            margin: 0; /* Align forms better */
+            margin: 0;
         }
 
-        /* Responsive styles */
         @media (max-width: 768px) {
             .user-list {
-                grid-template-columns: 1fr; /* Single column for smaller screens */
+                grid-template-columns: 1fr;
             }
 
             .user-item {
-                padding: 15px; /* Add more padding for better visibility */
+                padding: 15px;
             }
 
             form input {
-                width: 100%; /* Make the search input full width on small screens */
+                width: 100%;
             }
 
             .user-item .action-buttons {
-                flex-direction: column; /* Stack the buttons vertically */
+                flex-direction: column;
                 gap: 10px;
             }
 
             .user-item .action-buttons form {
-                width: 100%; /* Ensure the forms take up full width */
+                width: 100%;
             }
 
             .content {
@@ -178,10 +170,9 @@
             }
         }
 
-        /* Medium screens */
         @media (max-width: 1024px) {
             .user-list {
-                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* 2 columns for medium screens */
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             }
         }
 
@@ -189,7 +180,6 @@
 </head>
 <body>
 
-<!-- Sidebar -->
 <div class="sidebar">
     <h3>Menu</h3>
     <a th:href="@{/find-hobby}">Find a Hobby</a>
@@ -199,32 +189,29 @@
     <a th:href="@{/my-posts}">My Posts</a>
     <a th:href="@{/users}">Users</a>
     <a th:href="@{/contacts}">View Contacts</a>
+    <a th:href="@{/notifications}">Notifications</a>
+    <a th:href="@{/dashboard}">Dashboard</a>
+    <a th:href="@{/logout}">Logout</a>
 </div>
 
-<!-- Content Area -->
 <div class="content">
     <h2>My Contacts</h2>
 
-    <!-- Search Form for contacts -->
     <form th:action="@{/contacts}" method="get">
         <input type="text" name="query" placeholder="Search contacts by name or email..." th:value="${query}" />
         <button type="submit">Search</button>
     </form>
 
     <div class="user-list">
-        <!-- Iterate over contacts -->
         <div th:each="contact : ${contacts}" class="user-item">
             <p><strong>Name:</strong> <span th:text="${contact.contactUser.firstName} + ' ' + ${contact.contactUser.lastName}"></span></p>
             <p><strong>Email:</strong> <span th:text="${contact.contactUser.email}"></span></p>
 
-            <!-- Action Buttons -->
             <div class="action-buttons">
-                <!-- Send Message Button -->
                 <form th:action="@{/conversation/{userId}(userId=${contact.contactUser.id})}" method="get">
                     <button type="submit">Send Message</button>
                 </form>
 
-                <!-- Remove Contact Button -->
                 <form th:action="@{/remove-contact/{userId}(userId=${contact.contactUser.id})}" method="post">
                     <button type="submit">Delete</button>
                 </form>

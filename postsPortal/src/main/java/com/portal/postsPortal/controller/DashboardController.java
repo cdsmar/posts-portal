@@ -5,9 +5,10 @@ import com.portal.postsPortal.model.User;
 import com.portal.postsPortal.repository.PostRepository;
 import com.portal.postsPortal.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,15 +27,31 @@ public class DashboardController {
         this.userRepo = userRepo;
     }
 
-    // Common method to fetch user from the session
-    private User getUserFromSession(HttpServletRequest request) {
-        HttpSession session = request.getSession();
-        return (User) session.getAttribute("user"); // This assumes the user is set in the session after OAuth login
+    private User getAuthenticatedUser(HttpServletRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            if (authentication.getPrincipal() instanceof UserDetails) {
+                String email = ((UserDetails) authentication.getPrincipal()).getUsername();
+                return userRepo.findByEmail(email).orElse(null);
+            } else if (authentication.getPrincipal() instanceof OAuth2User) {
+                OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
+                String email = oauthUser.getAttribute("email");
+                return userRepo.findByEmail(email).orElse(null);
+            }
+        }
+        return null;
+    }
+
+    private String truncateDescription(String description) {
+        if (description != null && description.length() > 150) {
+            return description.substring(0, 150) + "...";
+        }
+        return description;
     }
 
     @GetMapping("/dashboard")
     public String showAllPosts(@RequestParam(required = false) String query, Model model, HttpServletRequest request) {
-        User user = getUserFromSession(request);  // Retrieve user from session
+        User user = getAuthenticatedUser(request);
 
         if (user != null) {
             List<Post> posts;
@@ -45,6 +62,8 @@ public class DashboardController {
             } else {
                 posts = postRepo.findByUserNot(user);
             }
+
+            posts.forEach(post -> post.setDescription(truncateDescription(post.getDescription())));
 
             model.addAttribute("posts", posts);
             model.addAttribute("user", user);
@@ -57,10 +76,12 @@ public class DashboardController {
 
     @GetMapping("/my-posts")
     public String showUserPosts(Model model, HttpServletRequest request) {
-        User user = getUserFromSession(request);  // Retrieve user from session
+        User user = getAuthenticatedUser(request);
 
         if (user != null) {
             List<Post> posts = postRepo.findByUser(user);
+
+            posts.forEach(post -> post.setDescription(truncateDescription(post.getDescription())));
 
             model.addAttribute("posts", posts);
             model.addAttribute("user", user);
@@ -73,10 +94,12 @@ public class DashboardController {
 
     @GetMapping("/find-hobby")
     public String showHobbyPosts(Model model, HttpServletRequest request) {
-        User user = getUserFromSession(request);  // Retrieve user from session
+        User user = getAuthenticatedUser(request);
 
         if (user != null) {
-            List<Post> posts = postRepo.findByCategory("Hobby");
+            List<Post> posts = postRepo.findByCategoryAndUserNot("Hobby", user);
+
+            posts.forEach(post -> post.setDescription(truncateDescription(post.getDescription())));
 
             model.addAttribute("posts", posts);
             model.addAttribute("user", user);
@@ -89,10 +112,12 @@ public class DashboardController {
 
     @GetMapping("/find-studying")
     public String showStudyingPosts(Model model, HttpServletRequest request) {
-        User user = getUserFromSession(request);  // Retrieve user from session
+        User user = getAuthenticatedUser(request);
 
         if (user != null) {
-            List<Post> posts = postRepo.findByCategory("Studying");
+            List<Post> posts = postRepo.findByCategoryAndUserNot("Studying", user);
+
+            posts.forEach(post -> post.setDescription(truncateDescription(post.getDescription())));
 
             model.addAttribute("posts", posts);
             model.addAttribute("user", user);
@@ -105,10 +130,12 @@ public class DashboardController {
 
     @GetMapping("/find-group")
     public String showGroupPosts(Model model, HttpServletRequest request) {
-        User user = getUserFromSession(request);  // Retrieve user from session
+        User user = getAuthenticatedUser(request);
 
         if (user != null) {
-            List<Post> posts = postRepo.findByCategory("Group");
+            List<Post> posts = postRepo.findByCategoryAndUserNot("Group", user);
+
+            posts.forEach(post -> post.setDescription(truncateDescription(post.getDescription())));
 
             model.addAttribute("posts", posts);
             model.addAttribute("user", user);

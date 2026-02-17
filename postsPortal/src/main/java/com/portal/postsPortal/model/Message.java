@@ -22,10 +22,9 @@ public class Message {
     private Post post;
 
     @ManyToOne
-    @JoinColumn(name = "conversation_id", nullable = true)  // Make conversation nullable
+    @JoinColumn(name = "conversation_id", nullable = true)
     private Conversation conversation;
 
-    // Constructor for messages tied to a post
     public Message(String content, User user, Post post) {
         this.content = content;
         this.user = user;
@@ -33,7 +32,6 @@ public class Message {
         this.timestamp = LocalDateTime.now();
     }
 
-    // Constructor for messages tied to a conversation
     public Message(String content, User user, Conversation conversation) {
         this.content = content;
         this.user = user;
@@ -44,7 +42,6 @@ public class Message {
     public Message() {
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }

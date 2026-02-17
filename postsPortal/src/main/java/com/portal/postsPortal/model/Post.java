@@ -11,6 +11,7 @@ public class Post {
     private Long id;
 
     private String title;
+    @Column(length = 255)
     private String description;
 
     @ManyToOne

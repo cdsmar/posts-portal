@@ -5,6 +5,7 @@ import com.portal.postsPortal.model.User;
 import com.portal.postsPortal.repository.ContactRepository;
 import com.portal.postsPortal.repository.UserRepository;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,49 +28,49 @@ public class ContactController {
         this.contactRepository = contactRepository;
     }
 
+    private User getLoggedInUser(Authentication authentication) {
+        if (authentication.getPrincipal() instanceof OAuth2User) {
+            OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+            String email = oAuth2User.getAttribute("email");
+            return userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        } else {
+            String username = authentication.getName();
+            return userRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("User not found"));
+        }
+    }
+
     @GetMapping("/users")
     public String showUsers(@RequestParam(value = "query", required = false) String query,
                             Model model,
                             Authentication authentication) {
 
-        String username = authentication.getName();
-        User loggedInUser = userRepository.findByEmail(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User loggedInUser = getLoggedInUser(authentication);
 
         List<User> users;
 
-        // Check if the query is not empty or null before searching
         if (query == null || query.isEmpty()) {
-            users = userRepository.findAll();  // No filtering, fetch all users
+            users = userRepository.findAll();
         } else {
-            // Perform search if the query is not empty
             users = userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
                     query, query, query
             );
         }
 
-        // Remove the logged-in user from the list if they exist
         users.remove(loggedInUser);
 
-        // Add the users and the query to the model
         model.addAttribute("users", users);
-        model.addAttribute("query", query); // Keep the search term in input
+        model.addAttribute("query", query);
 
         return "users-list";
     }
 
-
-
     @PostMapping("/add-contact/{userId}")
     public String addContact(@PathVariable Long userId, Authentication authentication, RedirectAttributes redirectAttributes) {
-        String username = authentication.getName();
-        User loggedInUser = userRepository.findByEmail(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User loggedInUser = getLoggedInUser(authentication);
 
         User contactUser = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Check if contact already exists
         if (contactRepository.existsByUserAndContactUser(loggedInUser, contactUser)) {
             redirectAttributes.addFlashAttribute("contactAlreadyExists", true);
         } else {
@@ -81,13 +82,9 @@ public class ContactController {
         return "redirect:/users";
     }
 
-
-
     @PostMapping("/remove-contact/{userId}")
     public String removeContact(@PathVariable Long userId, Authentication authentication) {
-        String username = authentication.getName();
-        User loggedInUser = userRepository.findByEmail(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User loggedInUser = getLoggedInUser(authentication);
 
         User contactUser = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -101,9 +98,7 @@ public class ContactController {
 
     @GetMapping("/contacts")
     public String showContacts(Model model, Authentication authentication) {
-        String username = authentication.getName();
-        User loggedInUser = userRepository.findByEmail(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User loggedInUser = getLoggedInUser(authentication);
 
         List<Contact> contacts = contactRepository.findByUser(loggedInUser);
 

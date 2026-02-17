@@ -5,7 +5,7 @@
     <style>
         * {
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif; /* Apply Inter font */
+            font-family: 'Inter', sans-serif;
         }
 
         body {
@@ -13,7 +13,6 @@
             display: flex;
         }
 
-        /* Sidebar Styles */
         .sidebar {
             position: fixed;
             top: 0;
@@ -43,30 +42,27 @@
             background-color: #ddd;
         }
 
-        /* Content Area Styles */
         .content {
-            margin-left: 270px; /* Sidebar width + margin */
+            margin-left: 270px;
             padding: 20px;
-            width: calc(100% - 270px); /* Takes up the remaining width after sidebar */
-            height: 100vh; /* Full height */
-            overflow-y: auto; /* Allows scrolling if the content overflows */
+            width: calc(100% - 270px);
+            height: 100vh;
+            position: relative;
         }
 
-        /* Popup Background Overlay */
         .popup-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+            background-color: rgba(0, 0, 0, 0.5);
             z-index: 1000;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        /* Popup container */
         .popup-container {
             position: relative;
             background-color: #fff;
@@ -74,13 +70,12 @@
             width: 90%;
             max-width: 800px;
             height: 80%;
-            overflow-y: auto;
+            overflow: hidden;
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             z-index: 1001;
         }
 
-        /* Close Button for the popup */
         .popup-close-btn {
             position: absolute;
             top: 10px;
@@ -91,24 +86,30 @@
             cursor: pointer;
         }
 
-        /* Add styles to the SVG icon */
         .popup-close-btn svg {
             width: 20px;
             height: 20px;
-            color: #f44336; /* Red color for the close icon */
+            color: #f44336;
         }
 
         .popup-close-btn:hover svg {
-            color: #e53935; /* Change color on hover */
+            color: #e53935;
         }
 
-        /* Title of the conversation */
         h2 {
             font-size: 24px;
             margin-bottom: 15px;
         }
 
-        /* Message container */
+        .message-list {
+            max-height: calc(70vh - 80px);
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
         .message-item {
             border-bottom: 1px solid #ddd;
             margin-bottom: 10px;
@@ -116,13 +117,11 @@
             background-color: #f9f9f9;
         }
 
-        /* Message content */
         .message-item p {
             margin: 5px 0;
             color: #555;
         }
 
-        /* Message input field */
         .message-form input {
             width: 80%;
             padding: 18px;
@@ -136,12 +135,10 @@
             background-color: #f9f9f9;
         }
 
-        /* Remove border when input is focused */
         .message-form input:focus {
             outline: none;
         }
 
-        /* Send Button */
         .message-form button {
             padding: 18px 25px;
             background-color: #007bff;
@@ -161,10 +158,9 @@
             background-color: #0056b3;
         }
 
-        /* Positioning the message form at the bottom */
         .message-form {
             position: absolute;
-            bottom: 20px;
+            bottom: 0;
             left: 0;
             width: 100%;
             padding: 10px;
@@ -172,9 +168,9 @@
             border-top: 1px solid #ddd;
             display: flex;
             align-items: center;
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
         }
 
-        /* Flexbox to place the input and button next to each other */
         .message-form form {
             display: flex;
             width: 100%;
@@ -184,7 +180,6 @@
             flex: 1;
         }
 
-        /* Responsive styling */
         @media (max-width: 768px) {
             .popup-container {
                 width: 100%;
@@ -211,7 +206,6 @@
 </head>
 <body>
 
-<!-- Sidebar -->
 <div class="sidebar">
     <h3>Menu</h3>
     <a th:href="@{/find-hobby}">Find a Hobby</a>
@@ -221,19 +215,16 @@
     <a th:href="@{/my-posts}">My Posts</a>
     <a th:href="@{/users}">Users</a>
     <a th:href="@{/contacts}">View Contacts</a>
+    <a th:href="@{/notifications}">Notifications</a>
+    <a th:href="@{/dashboard}">Dashboard</a>
+    <a th:href="@{/logout}">Logout</a>
 </div>
 
-<!-- Content Area -->
 <div class="content">
-
-    <!-- Popup Background Overlay -->
     <div class="popup-overlay">
-        <!-- Popup Container -->
         <div class="popup-container">
 
-            <!-- Close Button for the Popup -->
             <button class="popup-close-btn" onclick="closePopup()">
-                <!-- SVG Close Icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
                     <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
                 </svg>
@@ -241,17 +232,20 @@
 
             <h2>
                 Conversation with
-                <span th:text="${otherUser.firstName} + ' ' + ${otherUser.lastName}"></span>
+                <span th:text="${otherUser.firstName} + ' ' + (${otherUser.lastName != null ? otherUser.lastName : ''})"></span>
             </h2>
 
-            <!-- Messages Display -->
-            <div th:each="message : ${messages}" class="message-item">
-                <p><strong>From:</strong> <span th:text="${message.user.firstName} + ' ' + ${message.user.lastName}"></span></p>
-                <p th:text="${message.content}"></p>
-                <p><span th:text="${#temporals.format(message.timestamp, 'yyyy-MM-dd')}"></span> at <span th:text="${#temporals.format(message.timestamp, 'HH:mm:ss')}"></span></p>
+            <div id="messages-container" class="message-list">
+                <div th:each="message : ${messages}" class="message-item">
+                    <p>
+                        <strong>From:</strong>
+                        <span th:text="${message.user.firstName} + ' ' + ${message.user.lastName != null ? message.user.lastName : ''}"></span>
+                    </p>
+                    <p th:text="${message.content}"></p>
+                    <p><span th:text="${#temporals.format(message.timestamp, 'yyyy-MM-dd')}"></span> at <span th:text="${#temporals.format(message.timestamp, 'HH:mm:ss')}"></span></p>
+                </div>
             </div>
 
-            <!-- Message Form (fixed at the bottom) -->
             <div class="message-form">
                 <form th:action="@{/conversation/{userId}/send-message(userId=${otherUser.id})}" method="post" onsubmit="return checkMessage()">
                     <input type="text" name="content" placeholder="Type your message here...">
@@ -263,20 +257,80 @@
     </div>
 </div>
 
-<!-- JavaScript to close the popup and prevent empty message submission -->
 <script>
-    function closePopup() {
-        window.location.href = '/users'; // Redirect to '/users' when popup is closed
+    var currentUserId = /*[[${loggedInUser != null ? loggedInUser.id : 0}]]*/ 0;
+    var conversationId = /*[[${conversation.id}]]*/ 0;
+
+    function forceScrollToBottom() {
+        var messageContainer = document.getElementById("messages-container");
+        messageContainer.scrollTop = messageContainer.scrollHeight;
     }
 
-    function checkMessage() {
-        var input = document.querySelector('input[name="content"]');
-        if (input.value.trim() === '') {
-            return false; // Prevent submission if empty
+    function onMessageReceived(notificationMessage) {
+        if (notificationMessage.conversationId === conversationId) {
+            var messageContainer = document.getElementById("messages-container");
+
+            var messageElement = document.createElement("div");
+            messageElement.classList.add("message-item");
+
+            messageElement.innerHTML = `
+            <p><strong>From:</strong> ${notificationMessage.fromUser}</p>
+            <p>${notificationMessage.message}</p>
+            <p>${notificationMessage.timestamp}</p>
+        `;
+            messageContainer.appendChild(messageElement);
+
+            forceScrollToBottom();
+        } else {
+            alert("New message from " + notificationMessage.fromUser + ": " + notificationMessage.message);
         }
-        return true; // Allow submission if not empty
+    }
+
+    var stompClient = null;
+
+    function connect() {
+        var socket = new SockJS('/chat');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+
+            stompClient.subscribe('/topic/conversation/' + conversationId, function (notification) {
+                var message = JSON.parse(notification.body);
+                onMessageReceived(message);
+            });
+            stompClient.subscribe('/topic/refresh/' + currentUserId, function (message) {
+                if (message.body === "refresh") {
+                    window.location.reload();
+                }
+            });
+        });
+    }
+
+    function closePopup() {
+        window.location.href = '/users';
+    }
+
+    window.onload = function () {
+        connect();
+        setTimeout(function () {
+            forceScrollToBottom();
+        }, 300);
+    };
+
+    document.querySelector('.message-form form').onsubmit = function () {
+        setTimeout(function () {
+            forceScrollToBottom();
+        }, 300);
+    };
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('refresh') && urlParams.get('refresh') === 'true') {
+        urlParams.delete('refresh');
+        window.history.replaceState({}, document.title, window.location.pathname + '?' + urlParams.toString());
+
+        window.location.reload();
     }
 </script>
-
 </body>
 </html>

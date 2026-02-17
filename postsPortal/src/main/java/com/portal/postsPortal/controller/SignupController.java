@@ -2,7 +2,9 @@ package com.portal.postsPortal.controller;
 
 import com.portal.postsPortal.model.User;
 import com.portal.postsPortal.repository.UserRepository;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
 
 @Controller
 public class SignupController {
@@ -36,7 +39,7 @@ public class SignupController {
                                @RequestParam String lastName,
                                @RequestParam String email,
                                @RequestParam String password,
-                               Model model) {
+                               Model model, HttpSession session) {
         if (userRepo.findByEmail(email).isPresent()) {
             model.addAttribute("error", "Email already exists.");
             return "signup";
@@ -56,6 +59,13 @@ public class SignupController {
         user.setPassword(encodedPassword);
         userRepo.save(user);
 
+        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(userDetails, userDetails.getPassword(), userDetails.getAuthorities());
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        securityContext.setAuthentication(authentication);
+
+        session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
 
         return "redirect:/dashboard";
     }

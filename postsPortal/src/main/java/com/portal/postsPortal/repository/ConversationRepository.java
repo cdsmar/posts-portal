@@ -15,6 +15,4 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
     Optional<Conversation> findConversationBetweenUsers(
             @Param("userA") User userA,
             @Param("userB") User userB);
-
 }
-

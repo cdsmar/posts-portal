@@ -1,6 +1,5 @@
 package com.portal.postsPortal.model;
 
-
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -19,9 +18,8 @@ public class PostMessage {
     private User user;
 
     @ManyToOne
-    private Post post;  // This message is tied to a Post
+    private Post post;
 
-    // Constructor
     public PostMessage(String content, User user, Post post) {
         this.content = content;
         this.user = user;
@@ -31,7 +29,6 @@ public class PostMessage {
 
     public PostMessage() {}
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -72,4 +69,3 @@ public class PostMessage {
         this.post = post;
     }
 }
-

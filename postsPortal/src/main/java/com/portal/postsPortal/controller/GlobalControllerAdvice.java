@@ -21,4 +21,3 @@ public class GlobalControllerAdvice {
         return userRepository.findByEmail(authentication.getName()).orElse(null);
     }
 }
-

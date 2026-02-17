@@ -1,15 +1,10 @@
 package com.portal.postsPortal.controller;
 
-import com.portal.postsPortal.model.Contact;
-import com.portal.postsPortal.model.Conversation;
-import com.portal.postsPortal.model.Message;
-import com.portal.postsPortal.model.User;
-import com.portal.postsPortal.repository.ContactRepository;
-import com.portal.postsPortal.repository.ConversationRepository;
-import com.portal.postsPortal.repository.MessageRepository;
-import com.portal.postsPortal.repository.UserRepository;
+import com.portal.postsPortal.model.*;
+import com.portal.postsPortal.repository.*;
+import com.portal.postsPortal.service.NotificationService;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.portal.postsPortal.model.NotificationMessage;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @Controller
@@ -30,21 +24,35 @@ public class ConversationController {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
 
     public ConversationController(UserRepository userRepository,
                                   ConversationRepository conversationRepository,
                                   MessageRepository messageRepository,
-                                  SimpMessagingTemplate messagingTemplate) {
+                                  SimpMessagingTemplate messagingTemplate, NotificationRepository notificationRepository, NotificationService notificationService) {
         this.userRepository = userRepository;
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.messagingTemplate = messagingTemplate;
+        this.notificationRepository = notificationRepository;
+        this.notificationService = notificationService;
     }
 
+    private User getLoggedInUser(Authentication authentication) {
+        if (authentication.getPrincipal() instanceof OAuth2User) {
+            OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+            String email = oAuth2User.getAttribute("email");
+            return userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        } else {
+            String username = authentication.getName();
+            return userRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("User not found"));
+        }
+    }
     @GetMapping("/conversation/{userId}")
     public String showConversation(@PathVariable Long userId, Model model, Authentication authentication) {
-        String username = authentication.getName();
-        User loggedInUser = userRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("User not found"));
+        User loggedInUser = getLoggedInUser(authentication);
+
         User contactUser = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Contact user not found"));
 
         Conversation conversation = conversationRepository
@@ -69,16 +77,18 @@ public class ConversationController {
         User otherUser = conversation.getUser1().getId().equals(loggedInUser.getId()) ? conversation.getUser2() : conversation.getUser1();
         model.addAttribute("otherUser", otherUser);
 
+        model.addAttribute("currentUserId", loggedInUser.getId());
+
         return "conversation";
     }
+
 
     @PostMapping("/conversation/{userId}/send-message")
     public String sendMessage(@PathVariable Long userId,
                               @RequestParam String content,
                               Authentication authentication) {
 
-        User loggedInUser = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User loggedInUser = getLoggedInUser(authentication);
         User contactUser = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -103,15 +113,26 @@ public class ConversationController {
         message.setConversation(conversation);
         messageRepository.save(message);
 
-        // Send notification to recipient
-        NotificationMessage notification = new NotificationMessage(
+        Notification notification = new Notification(
+                loggedInUser.getFirstName() + " " + loggedInUser.getLastName() + ": " + content,
+                conversation.getId(),
+                contactUser.getId(),
+                LocalDateTime.now()
+        );
+        notificationRepository.save(notification);
+
+        NotificationMessage notificationMessage = new NotificationMessage(
                 loggedInUser.getFirstName() + " " + loggedInUser.getLastName(),
                 content,
-                conversation.getId()
+                conversation.getId(),
+                LocalDateTime.now().toString()
         );
 
-        messagingTemplate.convertAndSend("/topic/notifications/" + contactUser.getId(), notification);
+        messagingTemplate.convertAndSend("/topic/conversation/" + conversation.getId(), notificationMessage);
 
+        if (loggedInUser.getId() != contactUser.getId()) {
+            messagingTemplate.convertAndSend("/topic/refresh/" + contactUser.getId(), "refresh");
+        }
         return "redirect:/conversation/" + userId;
     }
 }

@@ -79,16 +79,10 @@
             margin-bottom: 10px;
         }
 
-        .success-message {
-            color: green;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
         .social-buttons a {
             text-align: center;
             display: block;
-            margin-bottom: 5px; /* Reduce space between Google and Facebook buttons */
+            margin-bottom: 5px;
         }
 
         .social-buttons button {
@@ -103,7 +97,7 @@
             color: white;
         }
 
-        .social-buttons .facebook-btn {
+        .social-buttons {
             background-color: #3b5998;
             color: white;
         }
@@ -150,10 +144,6 @@
         Invalid email or password.
     </div>
 
-    <div th:if="${param.logout}" class="success-message">
-        You have been logged out successfully.
-    </div>
-
     <form th:action="@{/login}" method="post">
         <div class="mb-3">
             <label for="username" class="form-label">Email</label>
@@ -178,12 +168,6 @@
         <a href="/oauth2/authorization/google">
             <button class="google-btn btn">
                 <i class="bi bi-google"></i> Login with Google
-            </button>
-        </a>
-
-        <a href="/oauth2/authorization/facebook">
-            <button class="facebook-btn btn">
-                <i class="bi bi-facebook"></i> Sign up with Facebook
             </button>
         </a>
     </div>

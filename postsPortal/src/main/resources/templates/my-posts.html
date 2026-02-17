@@ -13,7 +13,6 @@
             display: flex;
         }
 
-        /* Sidebar Styles */
         .sidebar {
             position: fixed;
             top: 0;
@@ -43,21 +42,19 @@
             background-color: #ddd;
         }
 
-        /* Content Area Styles */
         .content {
-            margin-left: 270px; /* Sidebar width + margin */
+            margin-left: 270px;
             padding: 20px;
-            width: calc(100% - 270px); /* Takes up the remaining width after sidebar */
-            height: 100vh; /* Full height */
-            overflow-y: auto; /* Allows scrolling if the content overflows */
+            width: calc(100% - 270px);
+            height: 100vh;
+            overflow-y: auto;
         }
 
-        /* Flexbox for Welcome Message and Search Bar */
         .header {
             display: flex;
-            justify-content: space-between; /* Aligns the content on both ends */
-            align-items: center; /* Vertically aligns them */
-            margin-bottom: 20px; /* Adds some space below */
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
 
         .header h3 {
@@ -66,11 +63,10 @@
             color: #333;
         }
 
-        /* Style for the search bar container */
         .search-bar {
             display: flex;
-            align-items: center;  /* Ensures that input and button are aligned */
-            gap: 0; /* Removes any space between input and button */
+            align-items: center;
+            gap: 0;
         }
 
         .search-bar input {
@@ -78,15 +74,15 @@
             font-size: 16px;
             border-radius: 4px;
             border: 1px solid #ccc;
-            flex-grow: 1; /* Makes the input grow to take available space */
-            outline: none; /* Removes the outline */
-            height: 40px; /* Sets a fixed height for the input */
-            margin: 0; /* Removes default margin */
-            box-sizing: border-box; /* Ensures padding and border are included in the element's size */
+            flex-grow: 1;
+            outline: none;
+            height: 40px;
+            margin: 0;
+            box-sizing: border-box;
         }
 
         .search-bar input:focus {
-            border-color: #007bff; /* Highlight border color when focused */
+            border-color: #007bff;
         }
 
         .search-bar button {
@@ -96,17 +92,16 @@
             border: none;
             color: white;
             cursor: pointer;
-            white-space: nowrap; /* Ensures the button text doesn't overflow */
-            height: 40px; /* Sets the same height as input */
-            margin: 0; /* No space between the input and button */
-            box-sizing: border-box; /* Ensures padding and border are included in the element's size */
+            white-space: nowrap;
+            height: 40px;
+            margin: 0;
+            box-sizing: border-box;
         }
 
         .search-bar button:hover {
             background-color: #0056b3;
         }
 
-        /* Post containers */
         .post-container {
             background-color: #fff;
             padding: 15px;
@@ -115,10 +110,10 @@
             border: 1px solid #ddd;
             transition: box-shadow 0.3s ease;
             margin-bottom: 20px;
-            width: 100%; /* Default width for smaller screens */
+            width: 100%;
             display: flex;
             flex-direction: column;
-            height: 300px; /* Ensures all post containers have the same height */
+            height: 300px;
             justify-content: space-between;
         }
 
@@ -130,7 +125,7 @@
             margin: 0 0 10px;
             font-size: 18px;
             color: #333;
-            text-decoration: none; /* Remove underline */
+            text-decoration: none;
         }
 
         .post-container p {
@@ -140,62 +135,62 @@
         .post-container .description {
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: normal; /* Allow for more characters to show */
+            white-space: normal;
             max-width: 100%;
-            flex-grow: 1; /* Allows description to take up available space */
+            flex-grow: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
         }
 
         .post-container a {
-            text-decoration: none; /* Removes underline */
-            color: inherit; /* Ensures the link color inherits from the parent */
+            text-decoration: none;
+            color: inherit;
         }
 
-        /* Category Bubbles */
         .category {
             font-weight: 500;
             padding: 5px 10px;
             border-radius: 50px;
             color: white;
             display: inline-block;
-            text-transform: capitalize; /* Ensures the category name starts with a capital letter */
-            margin-bottom: 10px; /* Adds space between category and description */
+            text-transform: capitalize;
+            margin-bottom: 10px;
         }
 
         .category.hobby {
-            background-color: #ff7f50; /* Orange bubble */
+            background-color: #ff7f50;
         }
 
         .category.studying {
-            background-color: #6a5acd; /* Purple bubble */
+            background-color: #6a5acd;
         }
 
         .category.group {
-            background-color: #4682b4; /* Blue bubble */
+            background-color: #4682b4;
         }
 
         .timestamp, .posted-by {
             color: #888;
             font-size: 14px;
-            margin-top: auto; /* Pushes these elements to the bottom */
+            margin-top: auto;
         }
 
-        /* Display Posts in grid */
         .content .posts {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Dynamically adjusts the number of columns based on available space */
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
         }
 
-        /* Responsive styles */
         @media (max-width: 1200px) {
             .post-container {
-                width: 100%; /* Ensures full width on medium screens */
+                width: 100%;
             }
         }
 
         @media (max-width: 768px) {
             .post-container {
-                width: 100%; /* Full width for small screens */
+                width: 100%;
             }
 
             .content {
@@ -216,13 +211,14 @@
     <a th:href="@{/my-posts}">My Posts</a>
     <a th:href="@{/users}">Users</a>
     <a th:href="@{/contacts}">View Contacts</a>
+    <a th:href="@{/notifications}">Notifications</a>
+    <a th:href="@{/dashboard}">Dashboard</a>
+    <a th:href="@{/logout}">Logout</a>
 </div>
 
 <div class="content">
-    <!-- Header with Welcome and Search Bar -->
     <div class="header">
         <h3>Welcome, <span th:text="${user.firstName}"></span>!</h3>
-        <!-- Search Bar -->
         <div class="search-bar">
             <form th:action="@{/dashboard}" method="get">
                 <input type="text" name="query" placeholder="Search posts..." th:value="${searchQuery}" />
@@ -231,7 +227,6 @@
         </div>
     </div>
 
-    <!-- Display Posts -->
     <div class="posts">
         <div th:each="post : ${posts}">
             <div class="post-container">
@@ -241,7 +236,6 @@
                         <span th:class="'category ' + ${post.category.toLowerCase()}" th:text="${post.category}"></span>
                     </div>
                     <p class="description" th:text="${post.description}"></p>
-                    <!-- These two will be pushed to the bottom -->
                     <p class="posted-by">Posted by: <span th:text="${post.user.firstName}"></span> <span th:text="${post.user.lastName}"></span></p>
                     <p class="timestamp">Posted on: <span th:text="${#temporals.format(post.timestamp, 'yyyy-MM-dd')}"></span> at
                         <span th:text="${#temporals.format(post.timestamp, 'HH:mm:ss')}"></span></p>
@@ -250,6 +244,5 @@
         </div>
     </div>
 </div>
-
 </body>
 </html>

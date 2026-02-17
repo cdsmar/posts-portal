@@ -1,6 +1,5 @@
 package com.portal.postsPortal.repository;
 
-
 import com.portal.postsPortal.model.Conversation;
 import com.portal.postsPortal.model.Message;
 import com.portal.postsPortal.model.Post;
@@ -12,7 +11,4 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     List<Message> findByPostOrderByTimestampDesc(Post post);
     List<Message> findByConversation(Conversation conversation);
     List<Message> findByConversationOrderByTimestampAsc(Conversation conversation);
-
-
 }
-

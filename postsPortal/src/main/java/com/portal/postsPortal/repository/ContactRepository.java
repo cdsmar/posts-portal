@@ -1,6 +1,5 @@
 package com.portal.postsPortal.repository;
 
-
 import com.portal.postsPortal.model.Contact;
 import com.portal.postsPortal.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,4 +13,3 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
     boolean existsByUserAndContactUser(User user, User contactUser);
     Optional<Contact> findByUserAndContactUser(User user, User contactUser);
 }
-

@@ -1,8 +1,8 @@
 package com.portal.postsPortal.model;
-import jakarta.persistence.*;
 
+import jakarta.persistence.*;
 import java.util.List;
-import java.util.Set;
+
 @Entity
 @Table(
         uniqueConstraints = @UniqueConstraint(
@@ -26,7 +26,6 @@ public class Conversation {
     @OneToMany(mappedBy = "conversation", fetch = FetchType.LAZY)
     private List<Message> messages;
 
-    // Getters and setters
     public Long getId() {
         return id;
     }
@@ -59,4 +58,3 @@ public class Conversation {
         this.messages = messages;
     }
 }
-

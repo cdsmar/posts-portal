@@ -1,4 +1,5 @@
 package com.portal.postsPortal.service;
+
 import com.portal.postsPortal.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -19,9 +20,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepo.findByEmail(email)
-                .map(user -> new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), List.of()))  // Assuming you want the email as username
+                .map(user -> new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), List.of()))
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
-
 }
-
