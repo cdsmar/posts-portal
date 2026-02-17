@@ -1,11 +1,11 @@
 package com.portal.postsPortal.model;
 
-import jakarta.persistence.*;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-public class Message {
+public class PostMessage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,30 +19,17 @@ public class Message {
     private User user;
 
     @ManyToOne
-    private Post post;
+    private Post post;  // This message is tied to a Post
 
-    @ManyToOne
-    @JoinColumn(name = "conversation_id", nullable = true)  // Make conversation nullable
-    private Conversation conversation;
-
-    // Constructor for messages tied to a post
-    public Message(String content, User user, Post post) {
+    // Constructor
+    public PostMessage(String content, User user, Post post) {
         this.content = content;
         this.user = user;
         this.post = post;
         this.timestamp = LocalDateTime.now();
     }
 
-    // Constructor for messages tied to a conversation
-    public Message(String content, User user, Conversation conversation) {
-        this.content = content;
-        this.user = user;
-        this.conversation = conversation;
-        this.timestamp = LocalDateTime.now();
-    }
-
-    public Message() {
-    }
+    public PostMessage() {}
 
     // Getters and Setters
     public Long getId() {
@@ -84,12 +71,5 @@ public class Message {
     public void setPost(Post post) {
         this.post = post;
     }
-
-    public Conversation getConversation() {
-        return conversation;
-    }
-
-    public void setConversation(Conversation conversation) {
-        this.conversation = conversation;
-    }
 }
+

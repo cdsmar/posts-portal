@@ -56,10 +56,6 @@ public class SignupController {
         user.setPassword(encodedPassword);
         userRepo.save(user);
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-        UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authToken);
 
         return "redirect:/dashboard";
     }

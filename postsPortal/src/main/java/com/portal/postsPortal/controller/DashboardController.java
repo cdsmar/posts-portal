@@ -4,6 +4,8 @@ import com.portal.postsPortal.model.Post;
 import com.portal.postsPortal.model.User;
 import com.portal.postsPortal.repository.PostRepository;
 import com.portal.postsPortal.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -24,16 +26,17 @@ public class DashboardController {
         this.userRepo = userRepo;
     }
 
+    // Common method to fetch user from the session
+    private User getUserFromSession(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        return (User) session.getAttribute("user"); // This assumes the user is set in the session after OAuth login
+    }
+
     @GetMapping("/dashboard")
-    public String showAllPosts(@RequestParam(required = false) String query, Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public String showAllPosts(@RequestParam(required = false) String query, Model model, HttpServletRequest request) {
+        User user = getUserFromSession(request);  // Retrieve user from session
 
-        if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-
-            User user = userRepo.findByEmail(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
+        if (user != null) {
             List<Post> posts;
 
             if (query != null && !query.isEmpty()) {
@@ -53,15 +56,10 @@ public class DashboardController {
     }
 
     @GetMapping("/my-posts")
-    public String showUserPosts(Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public String showUserPosts(Model model, HttpServletRequest request) {
+        User user = getUserFromSession(request);  // Retrieve user from session
 
-        if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-
-            User user = userRepo.findByEmail(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
+        if (user != null) {
             List<Post> posts = postRepo.findByUser(user);
 
             model.addAttribute("posts", posts);
@@ -74,15 +72,10 @@ public class DashboardController {
     }
 
     @GetMapping("/find-hobby")
-    public String showHobbyPosts(Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public String showHobbyPosts(Model model, HttpServletRequest request) {
+        User user = getUserFromSession(request);  // Retrieve user from session
 
-        if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-
-            User user = userRepo.findByEmail(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
+        if (user != null) {
             List<Post> posts = postRepo.findByCategory("Hobby");
 
             model.addAttribute("posts", posts);
@@ -95,15 +88,10 @@ public class DashboardController {
     }
 
     @GetMapping("/find-studying")
-    public String showStudyingPosts(Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public String showStudyingPosts(Model model, HttpServletRequest request) {
+        User user = getUserFromSession(request);  // Retrieve user from session
 
-        if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-
-            User user = userRepo.findByEmail(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
+        if (user != null) {
             List<Post> posts = postRepo.findByCategory("Studying");
 
             model.addAttribute("posts", posts);
@@ -116,15 +104,10 @@ public class DashboardController {
     }
 
     @GetMapping("/find-group")
-    public String showGroupPosts(Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public String showGroupPosts(Model model, HttpServletRequest request) {
+        User user = getUserFromSession(request);  // Retrieve user from session
 
-        if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-
-            User user = userRepo.findByEmail(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
+        if (user != null) {
             List<Post> posts = postRepo.findByCategory("Group");
 
             model.addAttribute("posts", posts);

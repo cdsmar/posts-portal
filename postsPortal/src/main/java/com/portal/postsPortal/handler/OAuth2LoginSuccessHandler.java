@@ -5,6 +5,7 @@ import com.portal.postsPortal.repository.UserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -29,21 +30,27 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         String firstName = oAuth2User.getAttribute("given_name");
         String lastName = oAuth2User.getAttribute("family_name");
 
+        // Find or create the user
         User existingUser = userRepository.findByEmail(email).orElse(null);
+        User userToReturn = null;
 
         if (existingUser == null) {
-            User newUser = new User();
-            newUser.setEmail(email);
-            newUser.setFirstName(firstName);
-            newUser.setLastName(lastName);
-
-            userRepository.save(newUser);
-
-            setDefaultTargetUrl("/test");
+            // Create a new user if it doesn't exist
+            userToReturn = new User();
+            userToReturn.setEmail(email);
+            userToReturn.setFirstName(firstName);
+            userToReturn.setLastName(lastName);
+            userRepository.save(userToReturn);
         } else {
-            response.sendRedirect("/login?error=emailAlreadyExists");
+            userToReturn = existingUser;
         }
 
+        // Store the user in the session
+        HttpSession session = request.getSession();
+        session.setAttribute("user", userToReturn);
+
+        // Redirect to the dashboard
+        setDefaultTargetUrl("/dashboard");
         super.onAuthenticationSuccess(request, response, authentication);
     }
 }

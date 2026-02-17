@@ -91,6 +91,31 @@ public class PostController {
         return "redirect:/post-details/" + postId;
     }
 
+    @PostMapping("/post-details/{postId}/send-message")
+    public String sendMessageUnderPost(@PathVariable Long postId,
+                                       @RequestParam String content,
+                                       Authentication authentication) {
 
+        // Get the logged-in user
+        User loggedInUser = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Get the post to which the message is being sent
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+
+        // Create a new message tied to the post (without a conversation)
+        Message message = new Message();
+        message.setContent(content);
+        message.setTimestamp(LocalDateTime.now());
+        message.setUser(loggedInUser);
+        message.setPost(post);  // Associate with the post, not a conversation
+
+        // Save the message
+        messageRepository.save(message);
+
+        // Redirect back to the post details page (where messages are displayed)
+        return "redirect:/post-details/" + postId;
+    }
 
 }

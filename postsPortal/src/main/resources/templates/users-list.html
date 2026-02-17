@@ -203,6 +203,19 @@
 
 <!-- Content Area -->
 <div class="content">
+    <!-- JavaScript alert on contact addition -->
+    <div th:if="${contactAdded}">
+        <script>
+            alert("Contact added successfully!");
+        </script>
+    </div>
+
+    <div th:if="${contactAlreadyExists}">
+        <script>
+            alert("Contact already exists!");
+        </script>
+    </div>
+
     <h2>Users</h2>
 
     <!-- Search Form for users -->
@@ -214,7 +227,10 @@
     <div class="user-list">
         <!-- Iterate over users -->
         <div th:each="user : ${users}" class="user-item">
-            <p><strong>Name:</strong> <span th:text="${user.firstName} + ' ' + ${user.lastName}"></span></p>
+            <p><strong>Name:</strong>
+                <span th:if="${user.firstName != null}" th:text="${user.firstName}"></span>
+                <span th:if="${user.lastName != null}" th:text="${user.lastName}"></span>
+            </p>
             <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
 
             <!-- Action Buttons inside user item -->

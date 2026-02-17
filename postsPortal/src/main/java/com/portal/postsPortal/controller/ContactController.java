@@ -69,15 +69,19 @@ public class ContactController {
         User contactUser = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!contactRepository.existsByUserAndContactUser(loggedInUser, contactUser)) {
+        // Check if contact already exists
+        if (contactRepository.existsByUserAndContactUser(loggedInUser, contactUser)) {
+            redirectAttributes.addFlashAttribute("contactAlreadyExists", true);
+        } else {
             Contact contact = new Contact(loggedInUser, contactUser, LocalDateTime.now());
             contactRepository.save(contact);
-            // Add success message to redirect
             redirectAttributes.addFlashAttribute("contactAdded", true);
         }
 
         return "redirect:/users";
     }
+
+
 
     @PostMapping("/remove-contact/{userId}")
     public String removeContact(@PathVariable Long userId, Authentication authentication) {

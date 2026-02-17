@@ -142,12 +142,10 @@
             text-overflow: ellipsis;
             white-space: normal; /* Allow for more characters to show */
             max-width: 100%;
-            flex-grow: 1; /* Allows description to take up available space */
         }
-
         .post-container a {
             text-decoration: none; /* Removes underline */
-            color: inherit; /* Ensures the link color inherits from the parent */
+            color: inherit; /* Ensures the link color inherits from the parent, which helps keep the post's styling consistent */
         }
 
         /* Category Bubbles */
@@ -173,10 +171,9 @@
             background-color: #4682b4; /* Blue bubble */
         }
 
-        .timestamp, .posted-by {
+        .timestamp {
             color: #888;
             font-size: 14px;
-            margin-top: auto; /* Pushes these elements to the bottom */
         }
 
         /* Display Posts in grid */
@@ -241,8 +238,7 @@
                         <span th:class="'category ' + ${post.category.toLowerCase()}" th:text="${post.category}"></span>
                     </div>
                     <p class="description" th:text="${post.description}"></p>
-                    <!-- These two will be pushed to the bottom -->
-                    <p class="posted-by">Posted by: <span th:text="${post.user.firstName}"></span> <span th:text="${post.user.lastName}"></span></p>
+                    <p>Posted by: <span th:text="${post.user.firstName}"></span> <span th:text="${post.user.lastName}"></span></p>
                     <p class="timestamp">Posted on: <span th:text="${#temporals.format(post.timestamp, 'yyyy-MM-dd')}"></span> at
                         <span th:text="${#temporals.format(post.timestamp, 'HH:mm:ss')}"></span></p>
                 </a>
